@@ -309,9 +309,11 @@ PHP 8.4; `/opt/php/8.4/bin/php -r 'print_r(Imagick::queryFormats());'` (PDF, WEB
 
 ## 11. Git
 
-- Новый репозиторий для Laravel-проекта. Старый сайт **до начала работ** положить в git как есть (отдельный репо
-  или ветка `legacy`) — это эталон для сравнения. Большие файлы (PDF типографии, видео, `uploads/`) — в `.gitignore`
-  или Git LFS, решить на этапе 0.
+- **Старый сайт уже в git**: публичный репозиторий https://github.com/itwawox/fabrikant-site, тег
+  `legacy-2026-10-04` — эталон для сравнения. PDF меню и видео в него не входят (`.gitignore`), доступы к хостингу —
+  в `docs/private/` (тоже вне git).
+- Laravel-проект — **отдельный репозиторий** `itwawox/fabrikant-laravel` (видимость уточнить у заказчика; если
+  публичный — никаких доступов, `.env`, дампов БД и персональных данных броней в git).
 - Ветки: `main` (рабочая), `feature/<этап>-<кратко>`; мерж через PR (или локально, если без GitHub) после зелёных
   тестов.
 - Коммиты маленькие и осмысленные, по-английски в формате Conventional Commits (`feat(menu): …`,
@@ -358,8 +360,9 @@ PHP 8.4; `/opt/php/8.4/bin/php -r 'print_r(Imagick::queryFormats());'` (PDF, WEB
 ### Стартовый промпт для новой сессии
 
 ```
-Прочитай TZ-laravel.md, instrukcia.html и код текущего сайта в ~/Herd/fabrikant. Начни с этапа 0:
-задай вопросы из раздела 14, затем положи старый сайт в git как эталон, создай Laravel-проект
-рядом (~/Herd/fabrikant-laravel), установи Laravel Boost и Filament, настрой Pest и CI.
+Прочитай TZ-laravel.md, instrukcia.html, docs/private/hosting.md и код текущего сайта в ~/Herd/fabrikant
+(он уже в git: github.com/itwawox/fabrikant-site, тег legacy-2026-10-04). Начни с этапа 0:
+задай вопросы из раздела 14, создай Laravel-проект рядом (~/Herd/fabrikant-laravel) со своим
+git-репозиторием, установи Laravel Boost и Filament, настрой Pest и CI.
 Работай по этапам, после каждого — коммит, тег и короткий отчёт.
 ```

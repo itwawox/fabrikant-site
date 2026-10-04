@@ -73,6 +73,7 @@
     <a href="#menu">Обновление меню</a>
     <a href="#sections">Разметка разделов</a>
     <a href="#promos">Акции</a>
+    <a href="#git">Git</a>
     <a href="#check">Проверка</a>
     <a href="#problems">Если что-то не так</a>
   </nav>
@@ -149,7 +150,7 @@
     <tr><td><code>terms.pdf</code></td><td><span class="opt">По желанию</span></td><td>На него не ведёт ни одна ссылка сайта. Если он нужен по старому адресу — залейте.</td></tr>
     <tr><td><code>tools/</code></td><td><span class="no">Не заливать</span></td><td>Скрипты для своего компьютера. На сервере они закрыты и не нужны.</td></tr>
     <tr><td><code>.idea/</code>, <code>.DS_Store</code></td><td><span class="no">Не заливать</span></td><td>Служебные файлы редактора и macOS.</td></tr>
-    <tr><td><code>instrukcia.html</code>, <code>audit.html</code>, <code>TZ-laravel.md</code></td><td><span class="no">Не заливать</span></td><td>Внутренние документы. На сервере их смог бы открыть любой.</td></tr>
+    <tr><td><code>instrukcia.html</code>, <code>audit.html</code>, <code>TZ-laravel.md</code>, <code>README.md</code>, <code>.gitignore</code>, <code>.git/</code>, <code>docs/</code></td><td><span class="no">Не заливать</span></td><td>Внутренние документы. На сервере их смог бы открыть любой.</td></tr>
     <tr><td>Файлы прошлых меню (<code>uploads/</code> и <code>assets/img/menu/</code> со старым именем)</td><td><span class="no">Удалить</span></td><td>После того как новое меню проверено на сайте.</td></tr>
   </tbody>
 </table>
@@ -277,6 +278,15 @@ assets/img/menu/{новое имя}-*     ← все файлы нового м�
     '2026-11-14',   // концерт
 ),</code></pre>
 <div class="box info"><p>Дни недели и часы сайт берёт по времени Симферополя, а не по часам на компьютере гостя.</p></div>
+
+<h2 id="git">Git</h2>
+<p>Сайт под git: публичный репозиторий <a href="https://github.com/itwawox/fabrikant-site">github.com/itwawox/fabrikant-site</a>. Каждое изменение (новое меню, правка акций) — коммит; откатиться можно на любой прошлый.</p>
+<pre><code>git status                         # что поменялось
+git add -A
+git commit -m "Меню: зима 2026"
+git push                           # отправить на GitHub</code></pre>
+<p>В репозиторий не попадают (файл <code>.gitignore</code>): PDF меню в <code>uploads/</code> (их делает <code>new-menu.php</code>), видео главной, <code>docs/private/</code> с доступами к хостингу, файлы редактора. Репозиторий публичный — пароли и доступы в код не записывать.</p>
+<p>Git хранит код; на хостинг сайт по-прежнему заливается вручную, по списку из раздела «Выкладка».</p>
 
 <h2 id="check">Проверка после выкладки</h2>
 <ul class="check">
