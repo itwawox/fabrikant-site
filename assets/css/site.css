@@ -1,0 +1,834 @@
+/* Общие стили сайта.
+   Основа — сетка и панель навигации Bootstrap 3.3.7 (MIT) и тема Groggery;
+   оставлено только то, что используется на страницах.
+   Страницы «Акции» и «Контакты» оформлены в стиле печатного меню — их стили в gazette.css. */
+
+/* ---------- Шрифты ---------- */
+@font-face {
+  font-family: 'ARKHIVE';
+  src: url('../fonts/arkhive.woff2') format('woff2'), url('../fonts/ARKHIVE.TTF') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'AFISHA';
+  src: url('../fonts/afisha.woff2') format('woff2'), url('../fonts/AFISHA.TTF') format('truetype');
+  font-display: swap;
+}
+/* В файле только буквы слова «Фабрикантъ» — этим шрифтом набран один логотип в шапке */
+@font-face {
+  font-family: 'Good Vibes Pro';
+  src: url('../fonts/goodvibespro-brand.woff2') format('woff2');
+  font-display: swap;
+}
+
+/* ---------- Основа ---------- */
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+html {
+  font-size: 10px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  /* Под страницей — средний цвет подвала (узор pattern5.jpg). Его видно, когда страницу «оттягивают»
+     за край (Safari на Mac и iPhone) и под полупрозрачными панелями Safari: там не должно быть белого */
+  background-color: #1e1719;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+  /* Плавный переход между страницами сайта; браузеры без поддержки переходят как обычно */
+  @view-transition {
+    navigation: auto;
+  }
+}
+body {
+  margin: 0;
+  font-family: 'ARKHIVE', serif;
+  font-size: 19px;
+  letter-spacing: 1px;
+  line-height: 1.42857143;
+  color: #666666;
+  background-color: #ffffff;
+  /* Подвал всегда у нижнего края окна, даже если страница короче экрана (меню на высоком мониторе,
+     уменьшенный масштаб). dvh — текущая высота окна телефона, старые браузеры возьмут vh */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+/* Свободное место забирает основной блок страницы — фон раздела тянется до подвала, без белой полосы.
+   У страниц это либо <main>, либо последний <section> (перед ним бывает шапка .section_header) */
+body > main,
+body > section:last-of-type {
+  flex-grow: 1;
+}
+[hidden],
+dialog:not([open]) {
+  display: none !important;
+}
+a {
+  color: #cbb27c;
+  text-decoration: none;
+  font-family: 'ARKHIVE';
+  font-size: 24px;
+  letter-spacing: 1px;
+  background-color: transparent;
+}
+a:hover,
+a:focus {
+  color: #c3850d;
+  text-decoration: underline;
+}
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #c3850d;
+  outline-offset: 2px;
+}
+img {
+  border: 0;
+  vertical-align: middle;
+}
+.img-responsive {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+strong {
+  font-weight: bold;
+}
+small {
+  font-size: 86%;
+}
+hr {
+  box-sizing: content-box;
+  height: 0;
+  margin-top: 21px;
+  margin-bottom: 21px;
+  border: 0;
+  border-top: 1px solid #eeeeee;
+}
+h1,
+h2,
+h3,
+h4 {
+  font-family: serif;
+  font-weight: 500;
+  line-height: 1.1;
+  color: inherit;
+}
+h1,
+h2,
+h3 {
+  margin-top: 21px;
+  margin-bottom: 10.5px;
+}
+h4 {
+  margin-top: 10.5px;
+  margin-bottom: 10.5px;
+  font-size: 20px;
+  font-weight: bold;
+}
+h1 {
+  font-size: 36px;
+}
+h2 {
+  font-size: 32px;
+}
+h3 {
+  font-size: 26px;
+}
+p {
+  margin: 0 0 10.5px;
+}
+ul,
+ol {
+  margin-top: 0;
+  margin-bottom: 10.5px;
+}
+dl {
+  margin-top: 0;
+  margin-bottom: 21px;
+}
+dt,
+dd {
+  line-height: 1.42857143;
+}
+dt {
+  font-weight: bold;
+}
+dd {
+  margin-left: 0;
+}
+button {
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.text-center {
+  text-align: center;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* SVG-значки (inc/_helpers.php, функция icon) */
+.icon-svg {
+  display: inline-block;
+  width: auto;
+  height: 1em;
+  fill: currentColor;
+  vertical-align: -0.125em;
+}
+
+/* ---------- Сетка ---------- */
+.container {
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (min-width: 768px) {
+  .container {
+    width: 750px;
+  }
+}
+@media (min-width: 992px) {
+  .container {
+    width: 970px;
+  }
+}
+@media (min-width: 1200px) {
+  .container {
+    width: 1170px;
+  }
+}
+.row {
+  margin-left: -15px;
+  margin-right: -15px;
+}
+.col-sm-4,
+.col-sm-6,
+.col-md-6,
+.col-sm-8,
+.col-sm-10,
+.col-sm-12,
+.col-md-12 {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (min-width: 768px) {
+  .col-sm-4,
+  .col-sm-6,
+  .col-sm-8,
+  .col-sm-10,
+  .col-sm-12 {
+    float: left;
+  }
+  .col-sm-12 {
+    width: 100%;
+  }
+  .col-sm-10 {
+    width: 83.33333333%;
+  }
+  .col-sm-8 {
+    width: 66.66666667%;
+  }
+  .col-sm-6 {
+    width: 50%;
+  }
+  .col-sm-4 {
+    width: 33.33333333%;
+  }
+  .col-sm-offset-3 {
+    margin-left: 25%;
+  }
+  .col-sm-offset-1 {
+    margin-left: 8.33333333%;
+  }
+}
+@media (min-width: 992px) {
+  .col-md-6,
+  .col-md-12 {
+    float: left;
+  }
+  .col-md-12 {
+    width: 100%;
+  }
+  .col-md-6 {
+    width: 50%;
+  }
+}
+.clearfix:before,
+.clearfix:after,
+.container:before,
+.container:after,
+.row:before,
+.row:after,
+.nav:before,
+.nav:after,
+.navbar:before,
+.navbar-header:before,
+.navbar-header:after,
+.navbar-collapse:before,
+.navbar-collapse:after {
+  content: " ";
+  display: table;
+}
+.clearfix:after,
+.container:after,
+.row:after,
+.nav:after,
+.navbar-header:after,
+.navbar-collapse:after {
+  clear: both;
+}
+
+/* ---------- Навигация ---------- */
+.nav {
+  margin-bottom: 0;
+  padding-left: 0;
+  list-style: none;
+}
+.nav > li {
+  position: relative;
+  display: block;
+}
+.nav > li > a {
+  position: relative;
+  display: block;
+  padding: 10px 15px;
+}
+.navbar {
+  min-height: 70px;
+  border-bottom: 1px solid rgba(203, 178, 124, 0.65);
+}
+/* Белая подложка, выезжающая сверху, когда страница прокручена (класс .navbar-inverse ставит site.js) */
+.navbar:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: white;
+  transform: translateY(-100%);
+  transition: transform 0.3s;
+  z-index: -999;
+}
+.navbar-fixed-top {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1030;
+}
+.navbar-collapse {
+  max-height: 340px;
+  padding-right: 15px;
+  padding-left: 15px;
+  overflow-x: visible;
+  border-top: 1px solid transparent;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.collapse {
+  display: none;
+}
+.collapse.in {
+  display: block;
+}
+.navbar-collapse.in {
+  overflow-y: auto;
+}
+.container > .navbar-header,
+.container > .navbar-collapse {
+  margin-right: -15px;
+  margin-left: -15px;
+}
+.navbar-brand {
+  position: relative;
+  float: left;
+  height: 70px;
+  padding: 24.5px 15px;
+  font-family: 'Good Vibes Pro';
+  font-size: 38px;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 21px;
+  letter-spacing: 4px;
+  transition: color .3s;
+}
+.navbar-brand:hover,
+.navbar-brand:focus {
+  text-decoration: none;
+}
+@media (max-width: 767px) {
+  .navbar-brand {
+    font-size: 25px;
+  }
+}
+.navbar-toggle {
+  position: relative;
+  float: right;
+  margin: 18px 15px 18px 0;
+  padding: 9px 10px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+.navbar-toggle .icon-bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  border-radius: 1px;
+  transition: background-color 0.2s;
+}
+.navbar-toggle .icon-bar + .icon-bar {
+  margin-top: 4px;
+}
+.navbar-nav {
+  margin: 12.25px -15px;
+}
+.navbar .navbar-nav > li > a {
+  position: relative;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-family: serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 21px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: color .2s;
+}
+.navbar .navbar-nav > li > a:hover,
+.navbar .navbar-nav > li > a:focus {
+  text-decoration: none;
+  background-color: transparent;
+}
+@media (min-width: 991px) {
+  .navbar-header {
+    float: left;
+  }
+  .navbar > .container .navbar-brand {
+    margin-left: -15px;
+  }
+  .navbar-toggle {
+    display: none;
+  }
+  .navbar-collapse {
+    width: auto;
+    padding-left: 0;
+    padding-right: 0;
+    border-top: 0;
+    box-shadow: none;
+  }
+  .navbar-collapse.collapse {
+    display: block;
+    overflow: visible;
+  }
+  .container > .navbar-header,
+  .container > .navbar-collapse {
+    margin-right: 0;
+    margin-left: 0;
+  }
+  .navbar-nav {
+    float: left;
+    margin: 0;
+  }
+  .navbar-nav > li {
+    float: left;
+  }
+  .navbar .navbar-nav > li > a {
+    padding-top: 24.5px;
+    padding-bottom: 24.5px;
+  }
+  .navbar .navbar-nav > li > a:hover:before {
+    content: "";
+    position: absolute;
+    top: 95%;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #cbb27c;
+  }
+  .navbar-right {
+    float: right;
+    margin-right: -15px;
+  }
+  /* Раздел, в котором находится посетитель, подчёркнут той же золотой линией, что появляется при наведении */
+  .navbar .navbar-nav > li > a[aria-current="page"]:before {
+    content: "";
+    position: absolute;
+    top: 95%;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #cbb27c;
+  }
+}
+/* Цвета: .navbar-default — поверх фото, .navbar-inverse — на белой подложке */
+.navbar-default .navbar-brand {
+  color: #f4f3de;
+}
+.navbar-default .navbar-nav > li > a {
+  color: #ffffff;
+}
+.navbar-default .navbar-toggle .icon-bar {
+  background-color: #ffffff;
+}
+.navbar-inverse {
+  box-shadow: 0 4px 4px -4px rgba(0, 0, 0, 0.2);
+}
+.navbar-inverse:after {
+  transform: translateY(0);
+}
+.navbar-inverse .navbar-brand,
+.navbar-inverse .navbar-nav > li > a {
+  color: #1b2d2f;
+}
+.navbar-inverse .navbar-toggle .icon-bar {
+  background-color: #1b2d2f;
+}
+.navbar .navbar-brand:hover,
+.navbar .navbar-brand:focus,
+.navbar .navbar-nav > li > a:hover,
+.navbar .navbar-nav > li > a:focus,
+.navbar .navbar-nav > li > a[aria-current="page"] {
+  color: #cbb27c;
+}
+
+/* ---------- Шапка внутренних страниц ---------- */
+.section_header {
+  position: relative;
+  /* Фото с отрицательным z-index остаётся внутри шапки, а не уходит под белый фон body */
+  isolation: isolate;
+  width: 100%;
+  height: 40vh;
+  padding: 0;
+}
+.section_header:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.section_header > .container {
+  height: 100%;
+  padding-top: 70px;
+}
+.section_header > .container > .row {
+  display: table;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+.section_header > .container > .row [class*="col-"] {
+  display: table-cell;
+  float: none;
+  vertical-align: middle;
+}
+.section_header .section__heading {
+  margin-bottom: 20px;
+  color: white;
+  font: normal 48px/38px 'AFISHA', serif;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+@media (max-width: 767px) {
+  .section_header .section__heading {
+    margin-bottom: 0;
+  }
+}
+.breadcrumb {
+  margin-bottom: 21px;
+  padding: 8px 0;
+  list-style: none;
+  text-align: center;
+}
+.breadcrumb > li {
+  display: inline-block;
+  font-size: 24px;
+}
+.breadcrumb > li + li:before {
+  content: "/\00a0";
+  padding: 0 5px;
+  color: #cccccc;
+}
+.breadcrumb > .active {
+  color: #ffffff;
+}
+/* Фоновые фото: assets/img/hero, для телефонов — уменьшенные копии с суффиксом -m */
+.section_header__bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  background: #2a2118 no-repeat center center / cover;
+}
+.hero_hall {
+  background-image: url(../img/hero/hall.webp);
+}
+.hero_stage {
+  background-image: url(../img/hero/stage.webp);
+}
+@media (max-width: 767px) {
+  .hero_hall {
+    background-image: url(../img/hero/hall-m.webp);
+  }
+  .hero_stage {
+    background-image: url(../img/hero/stage-m.webp);
+  }
+}
+
+/* ---------- Заголовки разделов ---------- */
+.section_title {
+  position: relative;
+  margin: 50px 0;
+  color: #1b2d2f;
+  font-family: AFISHA;
+  font-size: 90px;
+  font-weight: 700;
+  letter-spacing: 12px;
+  text-align: center;
+  text-transform: uppercase;
+}
+.section_title_line {
+  width: 250px;
+  height: 5px;
+  border: none;
+  background: linear-gradient(to right, transparent 0%, #cbb27c 50%, transparent 100%);
+}
+.section_caption {
+  margin-bottom: 80px;
+  padding: 0 16%;
+  font-size: 24px;
+  text-align: center;
+}
+@media (max-width: 1199px) {
+  .section_caption {
+    margin-bottom: 60px;
+    padding: 0 10%;
+  }
+}
+@media (max-width: 767px) {
+  .section_title {
+    margin: 10px 0;
+    font-size: 25px;
+  }
+  .section_title_line {
+    width: 100px;
+    height: 3px;
+  }
+  .section_caption {
+    margin-bottom: 30px;
+    padding: 0 5%;
+    font-size: 14px;
+  }
+}
+
+/* ---------- Главная ---------- */
+.section_welcome {
+  /* Фон и затемнение растягиваются по самой секции, а не по окну, и не уходят под фон страницы */
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  /* svh — высота окна с видимыми панелями браузера. С 100vh на iPhone секция выходила
+     выше фона, и между ней и подвалом оставалась белая полоса. Старые браузеры возьмут 100vh. */
+  height: 100vh;
+  height: 100svh;
+  padding: 0;
+  text-align: center;
+}
+.section_welcome:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+.section_welcome > .container {
+  height: 100%;
+}
+.section_welcome > .container > .row {
+  display: table;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+.section_welcome > .container > .row [class*="col-"] {
+  display: table-cell;
+  float: none;
+  vertical-align: middle;
+}
+.welcome_content {
+  color: #F4F3DE;
+}
+.welcome-video_content_heading .img-responsive {
+  margin: 0 auto;
+}
+.welcome_content_logo {
+  margin-bottom: 0;
+  padding-left: 10px;
+  list-style: none;
+}
+.welcome_content_logo > li {
+  display: inline-block;
+  margin-right: 15px;
+  font-size: 35px;
+}
+@media (max-width: 767px) {
+  .welcome_content_logo > li {
+    font-size: 25px;
+  }
+}
+/* Фон главной: кадр из ролика; на широких экранах site.js подгружает поверх него видео */
+.welcome-video_bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: #17140e url(../img/hero/home-poster.webp) no-repeat center center / cover;
+}
+.welcome-video_bg > video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Видео проявляется поверх кадра, только когда реально пошло: без чёрной вспышки при буферизации */
+  opacity: 0;
+  transition: opacity .8s;
+}
+.welcome-video_bg > video.is-playing {
+  opacity: 1;
+}
+
+/* ---------- О ресторане ---------- */
+.section_story {
+  padding: 10px 0 80px 0;
+  text-align: center;
+  background-color: rgba(240, 240, 240, 0.6);
+}
+.img-about {
+  display: inline-block;
+  margin: 31px auto;
+  border: 10px solid #fff;
+  box-shadow: 0 0 40px rgba(0, 0, 0, .25);
+}
+.qoute__title {
+  padding-top: 15px;
+}
+.section_story__quote {
+  margin-top: 60px;
+}
+.section_story__quote .qoute__text {
+  line-height: 1.65;
+}
+.section_story__quote .qoute__author {
+  color: #58211c;
+  font-family: 'ARKHIVE', serif;
+}
+.section_story__quote .qoute__signature {
+  margin-top: 20px;
+}
+.section_story__quote .qoute__signature img {
+  width: 50%;
+  height: auto;
+}
+.section_join {
+  padding: 25px 0 50px 0;
+  text-align: center;
+}
+@media (max-width: 991px) {
+  .section_join {
+    padding: 0 0 80px;
+  }
+}
+.section_join__logo {
+  color: #1b2d2f;
+  font-size: 60px;
+}
+.section_join__title {
+  margin-top: 0;
+  color: #1b2d2f;
+  font-size: 40px;
+}
+.section_join__text {
+  margin-bottom: 30px;
+  line-height: 1.65;
+}
+
+/* Страница «Меню» (шапка, содержание, газета, листалка, окно увеличения) оформлена в book.css */
+
+/* ---------- Подвал и кнопка «наверх» ---------- */
+.section_footer {
+  /* Прижат к низу окна (body — колонка), если страница короче экрана */
+  margin-top: auto;
+  padding: 15px 0;
+  /* Цвет под узором — его средний тон, тот же, что у html: пока узор грузится, подвал не меняет цвет */
+  background: #1e1719 url(../img/pattern5.jpg) repeat top center;
+}
+.section_footer .footer_info {
+  margin-bottom: 0;
+  color: #cbb27c;
+  font-size: 22px;
+  line-height: 1.6;
+}
+.soc-box a {
+  color: #cbb27c;
+  font-size: 26px;
+}
+.soc-box a:hover {
+  color: #fff;
+}
+/* Появляется после прокрутки (класс .show ставит site.js) */
+#back-to-top {
+  position: fixed;
+  right: 40px;
+  bottom: 40px;
+  z-index: 9999;
+  width: 45px;
+  height: 45px;
+  border-radius: 2px;
+  background: rgba(27, 29, 30, .8);
+  font-size: 12px;
+  line-height: 45px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 300ms ease-in-out;
+}
+#back-to-top.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+#back-to-top:hover {
+  background: #cbb27c;
+  color: #1b1d1e;
+}

@@ -1,0 +1,231 @@
+@layer gz-base, gz-layout, gz-components, gz-motion;
+
+/* «О ресторане» — очерк в стиле газеты-меню. Шапка, рубрики, колонтитул, приглашение и щит от site.css —
+   в press.css; здесь только своё: колонки текста, фото в рамке, сорта пива, плашка и объявление.
+   Списки и подписи ниже — теги из щита press.css, поэтому все правила в слоях. */
+
+@layer gz-layout {
+  /* Разворот рубрики: текст и боковая колонка с фото, как широкая и узкая колонки в галерее */
+  .story__spread {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(28px, 4vw, 48px);
+    margin-block-start: clamp(24px, 3.2vw, 38px);
+  }
+  @media (min-width: 900px) {
+    .story__spread {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: start;
+    }
+    .story__spread--flip {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    }
+    .story__spread--flip > .story__side {
+      order: -1;
+    }
+  }
+  /* Колонка задана явно: иначе она растягивается под строку точек в отточии сортов пива */
+  .story__side {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
+  /* Две фотографии рядом, на телефоне — друг под другом */
+  .story__pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(20px, 3vw, 34px);
+    margin-block: clamp(24px, 3.2vw, 38px);
+  }
+  @media (min-width: 700px) {
+    .story__pair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .story__text--narrow {
+    max-inline-size: 72ch;
+    margin-inline: auto;
+  }
+}
+
+@layer gz-components {
+  /* Текст очерка — машинописью, по ширине и с переносами, как вводный текст на первой странице меню */
+  .story__text p {
+    font-size: 17px;
+    line-height: 1.6;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
+  .story__text p + p {
+    margin-block-start: 1em;
+  }
+  /* Короткий текст рубрики — одной колонкой и крупнее, чтобы встал вровень с фото и сортами рядом */
+  .story__text--lead p {
+    font-size: clamp(17px, 1.6vw, 20px);
+    line-height: 1.65;
+  }
+  /* На широком экране длинный текст — в две колонки с пунктиром между ними, как на винной странице меню */
+  @media (min-width: 1200px) {
+    .story__text--cols {
+      columns: 2;
+      column-gap: 44px;
+      column-rule: 3px dotted var(--gz-ink);
+    }
+    .story__text--cols p {
+      break-inside: avoid-column;
+    }
+  }
+  /* Буквица: первая буква рубрики — заголовочным шрифтом на три строки */
+  .story__first::first-letter {
+    float: left;
+    margin: 6px 10px 0 0;
+    font: normal 4.1em/.8 var(--gz-display);
+    color: var(--gz-ink);
+  }
+  @supports (initial-letter: 3) or (-webkit-initial-letter: 3) {
+    .story__first::first-letter {
+      float: none;
+      margin: 0 10px 0 0;
+      font-size: 1em;
+      line-height: 1;
+      -webkit-initial-letter: 3;
+      initial-letter: 3;
+    }
+  }
+
+  /* Фото в рамке краской с отступом, как на странице акций */
+  .story-photo__frame {
+    display: block;
+    padding: 4px;
+    border: 2px solid var(--gz-ink);
+    background: radial-gradient(circle, color-mix(in oklab, var(--gz-spot) 26%, transparent) 1.1px, transparent 1.6px) 0 0 / 6px 6px var(--gz-paper);
+  }
+  .story-photo__frame img {
+    inline-size: 100%;
+  }
+  .story-photo__caption {
+    margin-block-start: 10px;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  /* Сорта пива — строки с отточием, как в меню */
+  .story-beers {
+    padding-block: 16px 4px;
+    border-block: 5px solid var(--gz-ink);
+  }
+  .story-beers__title {
+    margin-block-end: 10px;
+    font: 21px/1.2 var(--gz-slab);
+    text-align: center;
+  }
+  .story-beers .gz-row {
+    font-size: 16px;
+  }
+  .story-beers__note {
+    margin-block-end: 12px;
+    color: var(--gz-grey);
+    font-size: 14px;
+    text-align: center;
+  }
+
+  /* Плашка «Своими руками» — тёмная, с тонкой рамкой внутри, как «Метр пива» */
+  .story-plaque {
+    padding: 22px 22px 20px;
+    background: var(--gz-ink);
+    outline: 1px solid var(--gz-paper);
+    outline-offset: -7px;
+    color: var(--gz-paper);
+  }
+  .story-plaque__title {
+    margin-block-end: 12px;
+    font: 30px/1 var(--gz-display);
+    letter-spacing: .02em;
+    text-align: center;
+  }
+  .story-plaque__list {
+    list-style: none;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .story-plaque__list li {
+    position: relative;
+    padding-inline-start: 2ch;
+  }
+  .story-plaque__list li + li {
+    margin-block-start: 6px;
+  }
+  .story-plaque__list li::before {
+    content: "*";
+    position: absolute;
+    inset-inline-start: 0;
+  }
+
+  .story__more {
+    margin-block-start: 26px;
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .story__welcome {
+    margin-block-start: clamp(32px, 5vw, 56px);
+    text-align: center;
+  }
+  .story__welcome-text {
+    font: clamp(22px, 3vw, 30px)/1.2 var(--gz-slab);
+    text-wrap: balance;
+  }
+  .story__logo {
+    inline-size: min(420px, 80%);
+    margin: 22px auto 0;
+  }
+
+  /* Объявление о работе: двойная рамка со скруглением, как «Цены указаны в рублях» в меню */
+  .story-ad {
+    max-inline-size: 760px;
+    margin-inline: auto;
+    padding: clamp(24px, 4vw, 40px) clamp(18px, 4vw, 48px);
+    border: 1px solid var(--gz-ink);
+    border-radius: 10px;
+    outline: 1px solid var(--gz-ink);
+    outline-offset: 4px;
+    text-align: center;
+  }
+  .story-ad__title {
+    font-size: clamp(38px, 5.4vw, 60px);
+  }
+  .story-ad__lede {
+    margin-block: 10px 18px;
+    font-weight: bold;
+    text-wrap: balance;
+  }
+  .story-ad__list {
+    display: grid;
+    gap: 8px;
+    max-inline-size: 52ch;
+    margin-inline: auto;
+    list-style: none;
+    font-size: 15px;
+    text-align: start;
+  }
+  .story-ad__list li {
+    position: relative;
+    padding-inline-start: 2.2ch;
+  }
+  .story-ad__list li::before {
+    content: "\2014";
+    position: absolute;
+    inset-inline-start: 0;
+  }
+  .story-ad__contact a {
+    white-space: nowrap;
+  }
+  .story-ad__contact {
+    margin-block-start: 20px;
+    padding-block-start: 16px;
+    border-block-start: 3px dotted var(--gz-ink);
+    font-size: 16px;
+    text-wrap: balance;
+  }
+}

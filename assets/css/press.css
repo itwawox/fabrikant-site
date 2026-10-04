@@ -1,0 +1,759 @@
+@layer gz-base, gz-layout, gz-components, gz-motion;
+
+/* Галерея «Фотохроника». Краски, линейка, колонтитул и нижняя плашка — из gazette.css.
+   Щит: site.css написан без слоёв и потому сильнее их. Это единственное правило вне слоёв возвращает
+   теги галереи к правилам из слоёв; детали gazette.css не тронуты, кроме листа — здесь он шире. */
+:is(.press-hero, .press, .viewer) :is(a, h1, h2, h3, p, ul, ol, li, hr, figure, img, button):where(:not([class*="gz-"], [class*="gazette__"])),
+.press > .gazette__sheet {
+  all: revert-layer;
+}
+
+@layer gz-base {
+  .press-hero,
+  .viewer {
+    background: var(--gz-table);
+    color: var(--gz-paper);
+    font: 16px/1.45 var(--gz-type);
+    letter-spacing: 0;
+  }
+  :is(.press-hero, .press, .viewer) {
+    :is(a, h1, h2, p, ol, li, figure, img, button) {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    :is(h1, h2) {
+      font: normal 1em/1 var(--gz-display);
+      letter-spacing: .02em;
+    }
+    a {
+      color: inherit;
+      font: inherit;
+      letter-spacing: inherit;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    a:hover {
+      text-decoration: none;
+    }
+    /* Рамка фокуса — краской текста: тёмная на бумаге, белая на плашке */
+    :is(a, button):focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 3px;
+    }
+  }
+  /* Ширину фото задаёт атрибут width: шире своего настоящего размера оно не станет */
+  :is(.press, .viewer) img {
+    display: block;
+    max-inline-size: 100%;
+    block-size: auto;
+  }
+  .press-canvas {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    pointer-events: none;
+  }
+}
+
+@layer gz-layout {
+  /* ---------- Первая полоса ---------- */
+  .press-hero {
+    box-sizing: border-box;
+    display: grid;
+    grid-template: "plate" minmax(200px, 1fr) "title" "deck" "running" / minmax(0, 1fr);
+    gap: 18px;
+    min-block-size: clamp(540px, 100vh, 1100px);
+    min-block-size: clamp(540px, 100svh, 1100px);
+    /* сверху место под шапку сайта; на очень широком экране кадр не шире 1920px */
+    padding: 88px max(clamp(16px, 3.4vw, 48px), 50% - 960px) 22px;
+  }
+  .press-hero__plate {
+    grid-area: plate;
+    align-self: center;
+    block-size: calc(100% - 14px);
+    /* не крупнее самого файла: 900×600 на телефоне, 1920×683 на широком экране */
+    max-block-size: 600px;
+    margin: 7px;
+    position: relative;
+    overflow: hidden;
+    outline: 1px solid;
+    outline-offset: 6px;
+  }
+  .press-hero__title {
+    grid-area: title;
+  }
+  .press-hero__deck {
+    grid-area: deck;
+    max-inline-size: 46ch;
+  }
+  .press-hero__running {
+    grid-area: running;
+  }
+  @media (min-width: 768px) {
+    .press-hero {
+      grid-template: "plate plate" minmax(200px, 1fr) "title deck" "running running" / auto minmax(0, 1fr);
+      column-gap: 40px;
+    }
+    .press-hero__plate {
+      max-block-size: 683px;
+    }
+    .press-hero__deck {
+      place-self: end;
+    }
+  }
+
+  /* ---------- Лист с рубриками ---------- */
+  .press > .gazette__sheet {
+    box-sizing: border-box;
+    max-inline-size: 1248px;
+    margin-inline: auto;
+    padding-inline: 16px;
+  }
+  /* Колонтитул с рубриками прилипает под шапкой сайта (70px). На узком экране рубрики в одну строку
+     и листаются вбок, без полосы прокрутки */
+  .press {
+    view-timeline: --press-read block;
+  }
+  .press__contents {
+    position: sticky;
+    inset-block-start: 70px;
+    z-index: 5;
+    padding-block-start: 12px;
+    background: var(--gz-paper);
+  }
+  .press__contents-list {
+    display: flex;
+    align-items: baseline;
+    justify-content: safe center;
+    gap: 1ch;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .press__contents-list::-webkit-scrollbar {
+    display: none;
+  }
+  /* На телефоне без подписи «В номере:» — тогда все рубрики помещаются в строку */
+  @media (max-width: 767px) {
+    .press__contents-list > span:first-child {
+      display: none;
+    }
+  }
+  .rubric {
+    margin-block: clamp(44px, 6vw, 80px);
+    /* шапка сайта, колонтитул и немного воздуха */
+    scroll-margin-top: 140px;
+  }
+  .rubric__head {
+    display: grid;
+    grid-template-columns: minmax(20px, 1fr) auto minmax(20px, 1fr);
+    align-items: center;
+    column-gap: clamp(14px, 2.4vw, 30px);
+  }
+  /* Две газетные колонки, широкая и узкая; на телефоне они идут друг за другом */
+  .rubric__grid,
+  .rubric__col {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: clamp(24px, 3vw, 34px);
+  }
+  .rubric__grid {
+    margin-block-start: clamp(24px, 3.2vw, 38px);
+  }
+  @media (min-width: 700px) {
+    .rubric__grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+    .rubric__grid:has(> .rubric__col--narrow:first-child) {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    }
+    /* Малое фото под главным занимает часть колонки и прижато к соседней колонке */
+    .rubric__col--wide .plate:not(:first-child) {
+      inline-size: 62%;
+      justify-self: end;
+    }
+    .rubric__col--narrow + .rubric__col--wide .plate:not(:first-child) {
+      justify-self: start;
+    }
+  }
+  /* На широком экране подпись малого фото встаёт сбоку от него, в свободное поле */
+  @media (min-width: 992px) {
+    .rubric__col--wide .plate:not(:first-child) {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 62%;
+      align-items: end;
+      column-gap: 18px;
+      inline-size: auto;
+      justify-self: stretch;
+      .plate__caption {
+        order: -1;
+        justify-self: end;
+        margin: 0 0 4px;
+        text-align: end;
+      }
+    }
+    .rubric__col--narrow + .rubric__col--wide .plate:not(:first-child) {
+      grid-template-columns: 62% minmax(0, 1fr);
+      justify-self: stretch;
+      .plate__caption {
+        order: 0;
+        justify-self: start;
+        text-align: start;
+      }
+    }
+  }
+
+  /* ---------- Окно просмотра ---------- */
+  /* Три полосы: сверху счётчик и кнопки, посередине лента слайдов, снизу миниатюры */
+  .viewer {
+    position: fixed;
+    inset: 0;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    inline-size: 100%;
+    max-inline-size: none;
+    block-size: 100vh;
+    block-size: 100dvh;
+    max-block-size: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+  }
+  html:has(.viewer[open]) {
+    overflow: hidden;
+  }
+  .viewer__top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 10px 0 16px;
+  }
+  .viewer__count {
+    margin-inline-end: auto;
+  }
+  /* Лента слайдов. Полоса прокрутки скрыта: её заменяют свайп, кнопки, клавиши и миниатюры.
+     Вертикальный жест пальцем браузер отдаёт скрипту — им окно закрывают, смахнув фото вниз */
+  .viewer__track {
+    display: flex;
+    overflow: auto hidden;
+    overscroll-behavior: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    touch-action: pan-x;
+    /* по высоте ленты кадр вписывается в экран: единицы cqh ниже */
+    container-type: size;
+  }
+  .viewer__track::-webkit-scrollbar {
+    display: none;
+  }
+  .shot {
+    flex: 0 0 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    place-content: center;
+    justify-items: center;
+    row-gap: 12px;
+    padding: 12px 16px;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+  /* Кадр вписан в ленту и по высоте (за вычетом отступов и места под две строки подписи);
+     пропорции — ступенью из press_ratio_step() */
+  .shot__frame {
+    max-inline-size: min(100%, (100cqh - 24px - 64px) * var(--shot-r, 1.5));
+  }
+  .shot--r56 { --shot-r: .56; }
+  .shot--r66 { --shot-r: .66; }
+  .shot--r74 { --shot-r: .74; }
+  .shot--r100 { --shot-r: 1; }
+  .shot--r133 { --shot-r: 1.33; }
+  .viewer__btn--prev,
+  .viewer__btn--next {
+    position: absolute;
+    inset-block-start: calc(50% - 24px);
+  }
+  .viewer__btn--prev {
+    inset-inline-start: 12px;
+  }
+  .viewer__btn--next {
+    inset-inline-end: 12px;
+  }
+  /* Лента миниатюр: все фото номера, текущее отмечено */
+  .viewer__strip {
+    display: flex;
+    justify-content: safe center;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
+    scrollbar-width: none;
+  }
+  .viewer__strip::-webkit-scrollbar {
+    display: none;
+  }
+  .viewer__thumb {
+    flex: none;
+    inline-size: 72px;
+    block-size: 48px;
+    overflow: hidden;
+  }
+  .viewer__thumb img {
+    inline-size: 100%;
+    max-inline-size: none;
+    block-size: 100%;
+    object-fit: cover;
+  }
+  .viewer__toast {
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-end: 92px;
+    translate: -50% 0;
+  }
+  @media (min-width: 768px) {
+    .shot {
+      padding-inline: 84px;
+    }
+  }
+  @media (max-width: 767px) {
+    .viewer__thumb {
+      inline-size: 56px;
+      block-size: 40px;
+    }
+  }
+  /* Низкий экран (телефон лёжа): миниатюры уступают место фото */
+  @media (max-height: 560px) {
+    .viewer__strip {
+      display: none;
+    }
+    .viewer__toast {
+      inset-block-end: 24px;
+    }
+  }
+}
+
+@layer gz-components {
+  .press-hero__plate img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+  .press-hero__title {
+    font-size: clamp(84px, min(15.5vw, 27vh), 236px);
+    line-height: .86;
+  }
+  .press-hero__crumbs {
+    display: flex;
+    gap: 1ch;
+    list-style: none;
+    color: color-mix(in oklab, var(--gz-paper) 72%, var(--gz-table));
+    font-size: 14px;
+  }
+  .press-hero__crumbs li + li::before {
+    content: "/";
+    padding-inline-end: 1ch;
+  }
+  .press-hero__lede {
+    margin-block-start: 8px;
+    text-wrap: pretty;
+  }
+  .press-hero__running {
+    padding-block-start: 10px;
+    border-block-start: 5px solid;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-align: center;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  @media (min-width: 768px) {
+    /* пунктир между заголовком и вводкой — так в меню разделены колонки */
+    .press-hero__deck {
+      padding-inline-start: 22px;
+      border-inline-start: 3px dotted;
+    }
+    .press-hero__running {
+      font-size: 15px;
+      letter-spacing: .14em;
+    }
+  }
+
+  .press__contents a:not(:hover, [aria-current]) {
+    text-decoration: none;
+  }
+  /* Рубрика на экране — подчёркнута толсто, как заголовок в меню */
+  .press__contents a[aria-current] {
+    font-weight: bold;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+  }
+  /* Линейка колонтитула заодно и шкала прочитанного: маджента — вторая краска меню — ложится
+     поверх тёмной линейки по мере того, как листают номер. Наложение multiply тут не годится:
+     поверх почти чёрной краски маджента пропала бы */
+  @supports ((animation-timeline: view()) and (animation-range: contain)) {
+    .press__contents::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 -5px;
+      block-size: 5px;
+      background: var(--gz-spot);
+      transform-origin: 0 50%;
+      animation: press-read linear both;
+      animation-timeline: --press-read;
+      animation-range: contain 0% contain 100%;
+    }
+  }
+  @keyframes press-read {
+    from { scale: 0 1; }
+    to { scale: 1 1; }
+  }
+  .rubric__title {
+    font-size: clamp(44px, 6.6vw, 84px);
+    text-align: center;
+    text-wrap: balance;
+  }
+  .rubric__lede {
+    max-inline-size: 64ch;
+    margin: 12px auto 0;
+    color: var(--gz-grey);
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  /* Пластина: фото в рамке, как на странице акций, и подпись под ним */
+  .plate {
+    scroll-margin-top: 140px;
+  }
+  .plate__link {
+    position: relative;
+    display: block;
+    inline-size: fit-content;
+    max-inline-size: 100%;
+    padding: 4px;
+    border: 2px solid var(--gz-ink);
+    background: var(--gz-paper);
+    color: var(--gz-ink);
+    cursor: zoom-in;
+  }
+  .plate__link:focus-visible {
+    outline-width: 3px;
+    outline-offset: 7px;
+  }
+  /* Пока фото не приехало, в рамке растр бледной маджентой — пустой белой дыры не бывает */
+  .plate__media {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: radial-gradient(circle, color-mix(in oklab, var(--gz-spot) 26%, transparent) 1.1px, transparent 1.6px) 0 0 / 6px 6px var(--gz-paper);
+  }
+  /* «Несовмещение печати»: рамка маджентой поверх тёмной, при наведении съезжает */
+  .plate__link::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border: 2px solid var(--gz-spot);
+    mix-blend-mode: multiply;
+    pointer-events: none;
+  }
+  .plate__link:focus-visible::after {
+    translate: 4px 3px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .plate__link:hover::after {
+      translate: 4px 3px;
+    }
+  }
+  .plate__caption,
+  .shot__caption {
+    max-inline-size: 46ch;
+    margin-block-start: 10px;
+    font-size: 15px;
+    line-height: 1.4;
+    text-wrap: pretty;
+  }
+
+  .shot__caption {
+    max-inline-size: 60ch;
+    margin: 0;
+    color: rgb(255 255 255 / .86);
+    text-align: center;
+  }
+  .shot__rubric {
+    margin-inline-end: .6ch;
+    color: var(--gz-paper);
+    font-family: var(--gz-slab);
+    letter-spacing: .02em;
+  }
+  /* Пока кадр грузится — светлый растр на тёмном столе */
+  .shot__frame {
+    background: radial-gradient(circle, rgb(255 255 255 / .14) 1.1px, transparent 1.6px) 0 0 / 7px 7px;
+  }
+  .viewer__count {
+    font-size: 14px;
+    letter-spacing: .14em;
+  }
+  /* Кнопки-плашки — тёмные, с тонкой светлой рамкой внутри, как на странице меню */
+  .viewer__btn {
+    inline-size: 48px;
+    block-size: 48px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: var(--gz-ink);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / .7);
+    color: var(--gz-paper);
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .viewer__glyph {
+    inline-size: 22px;
+    block-size: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* На телефоне фото листают пальцем. Правило здесь, после display: grid у кнопки, иначе оно проиграло бы */
+  @media (max-width: 767px) {
+    .viewer__btn--prev,
+    .viewer__btn--next {
+      display: none;
+    }
+  }
+  .viewer__btn:disabled {
+    opacity: .32;
+    cursor: default;
+  }
+  .viewer__btn:focus-visible {
+    background: var(--gz-paper);
+    color: var(--gz-ink);
+    outline-color: var(--gz-paper);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .viewer__btn:hover:enabled {
+      background: var(--gz-paper);
+      box-shadow: inset 0 0 0 1px var(--gz-ink);
+      color: var(--gz-ink);
+    }
+  }
+  .viewer__thumb {
+    padding: 0;
+    border: 0;
+    background: rgb(255 255 255 / .08);
+    opacity: .5;
+    cursor: pointer;
+  }
+  .viewer__thumb[aria-current] {
+    opacity: 1;
+    outline: 2px solid var(--gz-paper);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .viewer__thumb:hover {
+      opacity: .85;
+    }
+  }
+  .viewer__toast {
+    padding: 8px 14px 7px;
+    background: var(--gz-paper);
+    color: var(--gz-ink);
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .viewer__toast.is-shown {
+    opacity: 1;
+  }
+
+  /* ---------- Конец номера: приглашение ---------- */
+  /* Двойная рамка краской, как «визитная карточка» на странице контактов */
+  .press-cta {
+    margin-block: clamp(56px, 8vw, 96px) clamp(28px, 4vw, 44px);
+    padding: clamp(30px, 4vw, 48px) clamp(18px, 4vw, 56px);
+    border: 2px solid var(--gz-ink);
+    outline: 1px solid var(--gz-ink);
+    outline-offset: -9px;
+    text-align: center;
+  }
+  .press-cta__title {
+    font-size: clamp(40px, 6vw, 72px);
+    text-wrap: balance;
+  }
+  .press-cta__text {
+    max-inline-size: 46ch;
+    margin: 14px auto 26px;
+    color: var(--gz-grey);
+    text-wrap: balance;
+  }
+  .press-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px 18px;
+  }
+  /* Главная кнопка — тёмная плашка с рамкой внутри, как «Метр пива» в меню; вторая — бумажная.
+     Цвет текста задан переменной --cta-ink и красит строки внутри кнопки, а не саму ссылку:
+     правило gazette.css «.gazette a:hover { color: inherit }» написано без слоёв и сильнее наших —
+     при наведении оно вернуло бы ссылке тёмную краску, и текст пропал бы на тёмном фоне */
+  .press-cta__action {
+    --cta-ink: var(--gz-ink);
+    display: inline-grid;
+    gap: 4px;
+    flex: 0 1 280px;
+    padding: 16px 24px 14px;
+    background: var(--gz-paper);
+    box-shadow: inset 0 0 0 2px var(--gz-ink);
+    color: var(--cta-ink);
+    font: 23px/1.1 var(--gz-slab);
+    letter-spacing: .02em;
+    text-decoration: none;
+  }
+  .press-cta__action > span {
+    color: var(--cta-ink);
+  }
+  .press-cta__action--main {
+    --cta-ink: var(--gz-paper);
+    background: var(--gz-ink);
+    box-shadow: inset 0 0 0 2px var(--gz-ink), inset 0 0 0 7px var(--gz-ink), inset 0 0 0 8px var(--gz-paper);
+  }
+  .press-cta__note {
+    font: 13px/1.3 var(--gz-type);
+    letter-spacing: 0;
+    opacity: .75;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .press-cta__action:hover {
+      --cta-ink: var(--gz-paper);
+      background: var(--gz-ink);
+    }
+    .press-cta__action--main:hover {
+      --cta-ink: var(--gz-ink);
+      background: var(--gz-paper);
+      box-shadow: inset 0 0 0 2px var(--gz-ink), inset 0 0 0 7px var(--gz-paper), inset 0 0 0 8px var(--gz-ink);
+    }
+  }
+  .press-cta__route {
+    margin-block-start: 20px;
+    font-size: 15px;
+  }
+}
+
+@layer gz-motion {
+  /* До запуска скрипта кадр зала стоит в одну краску; не запустится — через 1,2 с проявится сам.
+     Класс is-press ставит скрипт, когда берёт кадр на себя. */
+  @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+    .press-hero__plate:not(.is-press)::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--gz-spot);
+      mix-blend-mode: multiply;
+      animation: gz-ink-off .9s 1.2s ease-out both;
+    }
+    .press-hero__plate:not(.is-press) img {
+      filter: grayscale(1) contrast(1.15);
+      animation: gz-colour-in .9s 1.2s ease-out both;
+    }
+  }
+  @keyframes gz-ink-off {
+    to { opacity: 0; }
+  }
+  @keyframes gz-colour-in {
+    to { filter: grayscale(0) contrast(1); }
+  }
+
+  /* Плавное появление окна; где display и overlay не анимируются, оно открывается сразу */
+  .viewer {
+    opacity: 0;
+    transition-property: opacity, display, overlay;
+    transition-duration: .22s;
+    transition-timing-function: ease-out;
+    transition-behavior: allow-discrete;
+  }
+  .viewer[open] {
+    opacity: 1;
+  }
+  @starting-style {
+    .viewer[open] {
+      opacity: 0;
+    }
+  }
+
+  /* Первая полоса печатается: валик прокатывает заголовок слева направо, следом колонтитул,
+     и проступает вводка — пока сам кадр проявляется из растра в цвет. Других анимаций при загрузке нет */
+  @media (prefers-reduced-motion: no-preference) {
+    .press-hero__title {
+      animation: press-roll .9s cubic-bezier(.65, 0, .25, 1) .2s both;
+    }
+    .press-hero__running {
+      animation: press-roll .9s cubic-bezier(.65, 0, .25, 1) .5s both;
+    }
+    .press-hero__deck {
+      animation: press-ink .7s ease-out .85s both;
+    }
+  }
+  @keyframes press-roll {
+    from { clip-path: inset(-25% 100% -25% 0); }
+    to { clip-path: inset(-25% 0 -25% 0); }
+  }
+  @keyframes press-ink {
+    from { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .plate__link::after {
+      transition: translate .18s ease-out;
+    }
+    .viewer__thumb,
+    .viewer__toast {
+      transition: opacity .2s ease-out;
+    }
+    .press-cta__action {
+      transition: background-color .15s, color .15s, box-shadow .15s;
+    }
+    /* Отпущенное, но не смахнутое фото возвращается на место */
+    .shot__frame.is-returning {
+      transition: translate .25s cubic-bezier(.2, .8, .2, 1);
+    }
+    /* Фото «вырастает» из пластины в окно (имя gz-shot ставит скрипт) */
+    ::view-transition-group(gz-shot) {
+      animation-duration: .42s;
+      animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+    }
+    ::view-transition-old(gz-shot),
+    ::view-transition-new(gz-shot) {
+      block-size: 100%;
+      object-fit: cover;
+    }
+    /* Линейки у заголовка рубрики прочерчиваются от ромба */
+    @supports ((animation-timeline: view()) and (animation-range: entry)) {
+      .rubric__head .gz-rule {
+        animation: gz-rule-in linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 30%;
+      }
+    }
+  }
+  @keyframes gz-rule-in {
+    from { clip-path: inset(-12px 50%); }
+    to { clip-path: inset(-12px 0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .viewer {
+      transition: none;
+    }
+    ::view-transition-group(gz-shot),
+    ::view-transition-old(gz-shot),
+    ::view-transition-new(gz-shot) {
+      animation: none;
+    }
+  }
+}

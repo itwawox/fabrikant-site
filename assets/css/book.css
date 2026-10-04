@@ -1,0 +1,1225 @@
+@layer gz-base, gz-layout, gz-components, gz-motion;
+
+/* Страница «Меню» (menu.php) — всё на тёмном столе: шапка с кнопками, полоса с переключателем вида
+   и содержанием, газета (сцена и панель под ней), меню для чтения и окно увеличения страницы.
+   Краски и шрифты — из gazette.css.
+
+   Щит от site.css: его правила для a, p, h1, списков, button и [tabindex] не в слоях и потому сильнее
+   всего, что ниже. revert-layer возвращает этим элементам значения из наших слоёв. */
+.book :is(p, button, .book__stage),
+.menu-view__switch button,
+.menu-view__hint,
+:is(.menu-head, .menu-toc, .menu-read, .menu-dock, .menu-zoom) :is(a, p, h1, h2, h3, ol, li, img, button, [tabindex]) {
+  all: revert-layer;
+}
+
+@layer gz-base {
+  .book :is(p, button, .book__stage),
+  .menu-view__mode {
+    box-sizing: border-box;
+    margin: 0;
+  }
+  :is(.menu-head, .menu-toc, .menu-read, .menu-dock, .menu-zoom) :is(a, p, h1, h2, h3, ol, li, button),
+  .menu-view__hint {
+    box-sizing: border-box;
+    margin: 0;
+  }
+  :is(.menu-head, .menu-toc, .menu-read) :is(ol, li) {
+    padding: 0;
+    list-style: none;
+  }
+  .book button,
+  .menu-zoom button,
+  .menu-toc__arrow,
+  .menu-view__mode {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  /* Рамка фокуса светлая: тёмно-золотая из site.css на столе не видна */
+  .book :focus-visible {
+    outline: 2px solid var(--gz-paper);
+    outline-offset: 3px;
+  }
+  .book .book__stage:focus-visible {
+    outline-offset: -6px;
+  }
+  .menu-view__mode:focus-visible,
+  :is(.menu-head, .menu-toc, .menu-read, .menu-dock, .menu-zoom) :focus-visible {
+    outline: 2px solid var(--gz-paper);
+    outline-offset: 3px;
+  }
+}
+
+@layer gz-layout {
+  /* Стол начинается под прозрачной шапкой сайта (70px) и тянется до подвала */
+  .section_menu-pages {
+    padding-block-start: 70px;
+    background: var(--gz-table);
+    color: var(--gz-paper);
+  }
+  .menu-head__inner,
+  .menu-view__bar {
+    max-inline-size: 1440px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+  .menu-head {
+    border-block-end: 1px solid rgb(255 255 255 / .16);
+  }
+  .menu-head__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px 32px;
+    padding-block: 6px 12px;
+  }
+  /* Крошки над заголовком, сезон — на одной линии с ним, как «Осень 2026» на обложке меню */
+  .menu-head__titles {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: start;
+    align-items: baseline;
+    column-gap: 16px;
+  }
+  .menu-head__crumbs {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 1ch;
+  }
+  .menu-head__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .menu-view {
+    scroll-margin-top: 70px;
+  }
+  /* Гость раньше выбрал газету (data-want ставит строчка скрипта в menu.php): пока скрипт её открывает,
+     меню для чтения не показываем, иначе оно мелькнёт перед газетой. Остальные видят его сразу.
+     Если скрипт так и не запустился, через 3 секунды она появится сама. */
+  @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+    .menu-view[data-want="book"]:not([data-mode]) .menu-read {
+      visibility: hidden;
+      animation: book-failsafe 0s 3s forwards;
+    }
+  }
+  @keyframes book-failsafe {
+    to {
+      visibility: visible;
+    }
+  }
+
+  /* Полоса над газетой или меню для чтения: переключатель вида и содержание, всегда на одном месте.
+     Высота сцены ниже учитывает шапку (--head) и эту полосу (--switch), чтобы на первом экране
+     газета помещалась целиком, вместе с панелью под ней. */
+  .section_menu-pages {
+    --head: 98px;
+    --switch: 78px;
+  }
+  .menu-view__bar {
+    display: flex;
+    align-items: center;
+    gap: 12px 24px;
+    padding-block: 8px;
+    border-block-end: 1px solid rgb(255 255 255 / .16);
+  }
+  .menu-view__switch {
+    display: flex;
+    flex: none;
+  }
+  .menu-toc {
+    position: relative;
+    flex: 1;
+    min-inline-size: 0;
+  }
+  /* За краем полосы есть ещё пункты — край затухает (классы ставит menu3d/main.js) */
+  .menu-toc.has-after .menu-toc__list {
+    mask-image: linear-gradient(to right, #000 calc(100% - 64px), transparent);
+  }
+  .menu-toc.has-before .menu-toc__list {
+    mask-image: linear-gradient(to left, #000 calc(100% - 64px), transparent);
+  }
+  .menu-toc.has-before.has-after .menu-toc__list {
+    mask-image: linear-gradient(to right, transparent, #000 64px, #000 calc(100% - 64px), transparent);
+  }
+  /* Стрелки — только у края, за которым что-то есть, и только там, где есть мышь */
+  .menu-toc__arrow {
+    position: absolute;
+    inset-block-start: 50%;
+    z-index: 1;
+    display: none;
+    place-items: center;
+    inline-size: 36px;
+    block-size: 36px;
+    translate: 0 -50%;
+  }
+  .menu-toc__arrow--prev {
+    inset-inline-start: 0;
+  }
+  .menu-toc__arrow--next {
+    inset-inline-end: 0;
+  }
+  @media (hover: hover) and (min-width: 768px) {
+    .menu-toc.has-before .menu-toc__arrow--prev:not([hidden]),
+    .menu-toc.has-after .menu-toc__arrow--next:not([hidden]) {
+      display: grid;
+    }
+  }
+  /* Восемь страниц в ряд; не помещаются — полоса прокручивается пальцем, без полосы прокрутки */
+  .menu-toc__list {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+  .menu-toc__list::-webkit-scrollbar {
+    display: none;
+  }
+  .menu-toc__list > li {
+    flex: 1 0 128px;
+    scroll-snap-align: start;
+  }
+  /* relative — чтобы скрытая подпись «Страница N» (.sr-only, она absolute) оставалась внутри
+     прокручиваемой полосы, а не растягивала страницу вширь */
+  .menu-toc__link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    block-size: 100%;
+    padding: 5px 10px 5px 5px;
+  }
+  .menu-toc__thumb {
+    display: block;
+    flex: none;
+    inline-size: 36px;
+    block-size: auto;
+  }
+  .book {
+    --bar: 64px;
+    background: var(--gz-table);
+    color: var(--gz-paper);
+    font: 13px/1.4 var(--gz-type);
+    letter-spacing: 0;
+  }
+  /* Высота сцены задана заранее, чтобы страница не прыгала, когда появится холст.
+     Сцена с панелью помещаются на экран под шапкой сайта (70px). */
+  .book__stage {
+    position: relative;
+    overflow: hidden;
+    /* размеры сцены нужны подсказке-руке: по ним она находит край страницы (единицы cqw и cqh) */
+    container-type: size;
+    block-size: clamp(360px, calc(100vh - 70px - var(--head) - var(--switch) - var(--bar)), 980px);
+    block-size: clamp(360px, calc(100svh - 70px - var(--head) - var(--switch) - var(--bar)), 980px);
+  }
+  .book__stage canvas {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+  /* Первая страница картинкой, пока газета загружается */
+  .book__poster {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    inline-size: 94%;
+    block-size: 94%;
+    margin: auto;
+    object-fit: contain;
+    pointer-events: none;
+  }
+  /* Подсказка-рука. Закрытая газета лежит по центру сцены и занимает её почти целиком по высоте
+     (или по ширине на узком экране) — отсюда размер страницы. Палец ставим на внешнюю треть листа. */
+  .book__hand {
+    --page-h: min(88cqh, 124cqw);
+    --page-w: calc(var(--page-h) / 1.414);
+    position: absolute;
+    z-index: 2;
+    top: 58%;
+    left: calc(50% + var(--page-w) * .36);
+    pointer-events: none;
+  }
+  .book__bar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 6px 24px;
+    min-block-size: var(--bar);
+    padding: 8px 20px;
+  }
+  .book__controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Окно увеличения — на весь экран: страница сверху, панель снизу */
+  .menu-zoom {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    inline-size: 100%;
+    block-size: 100%;
+    max-inline-size: none;
+    max-block-size: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .menu-zoom__stage {
+    position: relative;
+    overflow: hidden;
+    touch-action: none;
+  }
+  /* Картинка вписана в окно; масштаб и сдвиг задаёт menu3d/zoom.js через transform от левого верхнего угла */
+  .menu-zoom__img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+    transform-origin: 0 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+  }
+  .menu-zoom__bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  }
+
+  /* На весь экран. Класс ставит ui.js — и при настоящем полноэкранном режиме, и там, где его нет (iPhone) */
+  .book.is-immersive {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .book.is-immersive .book__stage {
+    block-size: auto;
+  }
+  html.book-lock {
+    overflow: hidden;
+  }
+
+  @media (max-width: 1199px) {
+    .book__bar {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      padding-inline: 8px;
+    }
+    .book__hint {
+      grid-row: 2;
+      text-align: center;
+    }
+    .book__tip {
+      grid-row: 3;
+      padding-block-end: 6px;
+      text-align: center;
+    }
+    .book__tip-mark {
+      display: none;
+    }
+  }
+  @media (max-width: 767px) {
+    .book__stage {
+      block-size: min(78vh, 640px, 150vw);
+      block-size: min(78svh, 640px, 150vw);
+    }
+    .book.is-immersive .book__hint {
+      display: none;
+    }
+  }
+}
+
+@layer gz-components {
+  .book__hint {
+    max-inline-size: 56ch;
+    color: rgb(255 255 255 / .64);
+    font-size: 12px;
+    text-wrap: pretty;
+  }
+  /* Совет развернуть газету заметнее основной подсказки; на весь экран он уже не нужен,
+     как и после того, как газету разворачивали (класс has-full ставит ui.js) */
+  .book__tip {
+    max-inline-size: 36ch;
+    font-size: 13px;
+    text-wrap: balance;
+  }
+  .book__tip-mark {
+    margin-inline-end: 4px;
+    font-size: 20px;
+    line-height: 0;
+    vertical-align: -2px;
+  }
+  .book:is(.is-immersive, .has-full) .book__tip {
+    display: none;
+  }
+  /* Рука видна только пока стоит класс is-fresh; уходит плавно */
+  .book__hand {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .3s, visibility 0s .3s;
+  }
+  .book.is-fresh .book__hand {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
+  }
+  /* Светлая рука с тёмным контуром читается и на белой странице, и на тёмном столе.
+     Сдвиг ставит кончик указательного пальца в точку привязки. */
+  .book__hand-icon {
+    display: block;
+    inline-size: 60px;
+    block-size: 60px;
+    margin: -8px 0 0 -24px;
+    fill: var(--gz-paper);
+    stroke: var(--gz-ink);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 3px 4px rgb(0 0 0 / .45));
+  }
+  .book__hand-note {
+    display: block;
+    inline-size: max-content;
+    margin: 8px 0 0 -40px;
+    padding: 5px 10px 4px;
+    background: var(--gz-ink);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / .7);
+    color: var(--gz-paper);
+    font-size: 13px;
+    line-height: 1.2;
+  }
+  .book__count {
+    min-inline-size: 9ch;
+    font-size: 17px;
+    font-weight: bold;
+    letter-spacing: .06em;
+    text-align: center;
+    white-space: nowrap;
+  }
+  /* Кнопка-плашка: тёмная, с тонкой рамкой внутри — как «Метр пива» в меню */
+  .book__btn {
+    display: grid;
+    place-items: center;
+    inline-size: 48px;
+    block-size: 48px;
+    border: 3px solid var(--gz-ink);
+    background: var(--gz-ink);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / .7);
+    font-size: 19px;
+  }
+  .book__btn:disabled {
+    opacity: .32;
+    cursor: auto;
+  }
+  @media (hover: hover) {
+    .book__btn:hover:not(:disabled) {
+      border-color: var(--gz-paper);
+      background: var(--gz-paper);
+      box-shadow: inset 0 0 0 1px var(--gz-ink);
+      color: var(--gz-ink);
+    }
+  }
+  .book__glyph {
+    inline-size: 22px;
+    block-size: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+  }
+  .book__glyph--exit,
+  .is-immersive .book__glyph--enter {
+    display: none;
+  }
+  .is-immersive .book__glyph--exit {
+    display: block;
+  }
+  .book__sep {
+    inline-size: 1px;
+    block-size: 26px;
+    margin-inline: 8px;
+    background: rgb(255 255 255 / .3);
+  }
+
+  /* Две кнопки одной плашкой с тонкой светлой рамкой; нажатая — «бумажная», как выворотка в меню */
+  .menu-view__mode {
+    min-block-size: 48px;
+    padding: 10px 22px 9px;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / .7);
+    color: var(--gz-paper);
+    font: 18px/1.15 var(--gz-slab);
+    letter-spacing: .02em;
+  }
+  .menu-view__mode + .menu-view__mode {
+    margin-inline-start: -1px;
+  }
+  .menu-view__mode[aria-pressed="true"] {
+    background: var(--gz-paper);
+    color: var(--gz-ink);
+    cursor: auto;
+  }
+  @media (hover: hover) {
+    .menu-view__mode[aria-pressed="false"]:hover {
+      background: rgb(255 255 255 / .14);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .book__btn {
+      inline-size: 44px;
+      block-size: 44px;
+    }
+    .book__count {
+      min-inline-size: 7ch;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    .book__sep {
+      margin-inline: 2px;
+    }
+    /* Телефон: переключатель во всю ширину, кнопки поровну — в них легко попасть большим пальцем */
+    .menu-view__mode {
+      flex: 1 1 0;
+      padding-inline: 8px;
+      font-size: 16px;
+    }
+  }
+}
+
+@layer gz-motion {
+  @media (prefers-reduced-motion: no-preference) {
+    .book__btn,
+    .menu-view__mode {
+      transition: background-color .15s, color .15s, border-color .15s;
+    }
+    /* Кнопка «На весь экран» несколько раз подсвечивается рамкой, пока газету ни разу не развернули */
+    .book:not(.is-immersive, .has-full) .book__btn--full:not(:disabled, :focus-visible) {
+      animation: book-nudge 2.4s ease-out 1.5s 6;
+    }
+    /* Рука нажимает на край страницы, тянет его к корешку и отпускает — и так, пока газету не тронут */
+    .book.is-fresh .book__hand-move {
+      animation: book-pull 3.4s cubic-bezier(.45, 0, .25, 1) infinite;
+    }
+  }
+  @keyframes book-nudge {
+    0% {
+      outline: 2px solid rgb(255 255 255 / .9);
+      outline-offset: 0;
+    }
+    60%,
+    100% {
+      outline: 2px solid rgb(255 255 255 / 0);
+      outline-offset: 12px;
+    }
+  }
+  @keyframes book-pull {
+    0% {
+      opacity: 0;
+      transform: translate(14px, 12px);
+    }
+    12%,
+    22% {
+      opacity: 1;
+      transform: translate(0, 0);
+    }
+    64% {
+      opacity: 1;
+      transform: translate(calc(var(--page-w) * -.5), -12px);
+    }
+    80%,
+    100% {
+      opacity: 0;
+      transform: translate(calc(var(--page-w) * -.5), -12px);
+    }
+  }
+}
+
+/* ---------- Шапка, содержание и окно увеличения ---------- */
+
+@layer gz-layout {
+  @media (max-width: 1199px) {
+    .section_menu-pages {
+      --head: 0px;
+    }
+  }
+  /* Телефон: шапка в одну строку — заголовок с сезоном слева, две короткие кнопки справа; крошек нет,
+     на телефоне путь «Главная / Меню» есть в меню сайта. Так первая страница меню начинается
+     в первом экране. Переключателя вида тоже нет (газета только на ПК), содержание листается вбок */
+  @media (max-width: 767px) {
+    .menu-head__inner,
+    .menu-view__bar {
+      padding-inline: 12px;
+    }
+    .menu-head__inner {
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 12px;
+      padding-block: 8px;
+    }
+    .menu-head__crumbs {
+      display: none;
+    }
+    .menu-head__titles {
+      grid-template-columns: auto;
+      row-gap: 4px;
+    }
+    .menu-head__actions {
+      flex-wrap: nowrap;
+      gap: 8px;
+    }
+    .menu-view__bar {
+      flex-direction: column;
+      align-items: stretch;
+      padding-block: 10px;
+    }
+    .menu-toc__list > li {
+      flex: 0 0 148px;
+    }
+  }
+}
+
+@layer gz-components {
+  .menu-head__crumbs {
+    color: rgb(255 255 255 / .6);
+    font: 13px/1.4 var(--gz-type);
+    letter-spacing: 0;
+  }
+  .menu-head__crumbs li + li::before {
+    content: "/";
+    margin-inline-end: 1ch;
+  }
+  .menu-head__crumbs a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  @media (hover: hover) {
+    .menu-head__crumbs a:hover {
+      color: var(--gz-paper);
+    }
+  }
+  .menu-head__title {
+    color: var(--gz-paper);
+    font: normal clamp(44px, 6vw, 64px)/.95 var(--gz-display);
+    letter-spacing: .02em;
+  }
+  @media (max-width: 767px) {
+    .menu-head__title {
+      font-size: 36px;
+    }
+    .menu-head__season {
+      font-size: 14px;
+    }
+  }
+  .menu-head__season {
+    color: rgb(255 255 255 / .72);
+    font: clamp(16px, 2vw, 20px)/1 var(--gz-slab);
+    letter-spacing: .02em;
+  }
+
+  /* Кнопки шапки — плашки с тонкой рамкой, как переключатель вида. Главная, «Забронировать стол», —
+     бумажная, с двойной рамкой краской: так в меню выделены «Метр пива» и «Тафельшпиц» */
+  .menu-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-block-size: 56px;
+    padding: 8px 20px 8px 16px;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / .7);
+    color: var(--gz-paper);
+    font: 18px/1.1 var(--gz-slab);
+    letter-spacing: .02em;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .menu-cta__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    inline-size: 22px;
+    block-size: 22px;
+    font-size: 21px;
+  }
+  svg.menu-cta__icon {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .menu-cta__text {
+    display: grid;
+    gap: 2px;
+  }
+  .menu-cta__note {
+    white-space: nowrap;
+    font: 13px/1.3 var(--gz-type);
+    letter-spacing: 0;
+    opacity: .75;
+  }
+  .menu-cta--primary {
+    background: var(--gz-paper);
+    box-shadow: inset 0 0 0 3px var(--gz-paper), inset 0 0 0 4px var(--gz-ink);
+    color: var(--gz-ink);
+  }
+  @media (hover: hover) {
+    .menu-cta:hover {
+      background: rgb(255 255 255 / .12);
+    }
+    .menu-cta--primary:hover {
+      background: transparent;
+      box-shadow: inset 0 0 0 1px rgb(255 255 255 / .7);
+      color: var(--gz-paper);
+    }
+  }
+  .menu-cta__short {
+    display: none;
+  }
+  /* Телефон: от кнопки остаются значок и слово — «PDF» и «Бронь»; размер файла и номер телефона
+     прочитает экранный диктор (aria-label), а номер гость увидит, когда телефон предложит позвонить */
+  @media (max-width: 767px) {
+    .menu-cta {
+      justify-content: center;
+      gap: 8px;
+      min-block-size: 44px;
+      padding: 6px 12px;
+      font-size: 16px;
+    }
+    .menu-cta__more,
+    .menu-cta__long,
+    .menu-cta__note {
+      display: none;
+    }
+    .menu-cta__short {
+      display: inline;
+    }
+    /* Бронь на телефоне — большой кнопкой внизу экрана (.menu-dock), в шапке остаётся только PDF */
+    .menu-head .menu-cta--primary {
+      display: none;
+    }
+  }
+  @media (max-width: 359px) {
+    .menu-cta__icon {
+      display: none;
+    }
+  }
+
+  /* Содержание: миниатюра и подпись машинописью, как текст меню. Открытая страница — «бумажная» */
+  .menu-toc__link {
+    color: rgb(255 255 255 / .72);
+    font: 12px/1.25 var(--gz-type);
+    letter-spacing: 0;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .menu-toc__name {
+    text-wrap: balance;
+  }
+  .menu-toc__thumb {
+    box-shadow: 0 1px 4px rgb(0 0 0 / .6);
+  }
+  @media (hover: hover) {
+    .menu-toc__link:hover {
+      background: rgb(255 255 255 / .08);
+      color: var(--gz-paper);
+    }
+  }
+  .menu-toc__link[aria-current] {
+    background: var(--gz-paper);
+    color: var(--gz-ink);
+  }
+  .menu-toc__link[aria-current] .menu-toc__thumb {
+    box-shadow: 0 0 0 1px var(--gz-ink);
+  }
+  .menu-toc__arrow {
+    background: var(--gz-table);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / .5), 0 0 12px 6px var(--gz-table);
+    color: var(--gz-paper);
+    font-size: 16px;
+  }
+  @media (hover: hover) {
+    .menu-toc__arrow:hover {
+      background: var(--gz-paper);
+      color: var(--gz-ink);
+    }
+  }
+
+  .menu-zoom__bar {
+    color: var(--gz-paper);
+    font: 13px/1.4 var(--gz-type);
+    letter-spacing: 0;
+  }
+
+  .menu-zoom {
+    background: var(--gz-table);
+    color: var(--gz-paper);
+  }
+  .menu-zoom::backdrop {
+    background: var(--gz-table);
+  }
+  .menu-zoom__stage {
+    cursor: zoom-in;
+  }
+  .menu-zoom__stage.is-zoomed {
+    cursor: grab;
+  }
+  .menu-zoom__stage.is-zoomed:active {
+    cursor: grabbing;
+  }
+  .menu-zoom__close {
+    margin-inline-start: 8px;
+  }
+}
+
+@layer gz-motion {
+  @media (prefers-reduced-motion: no-preference) {
+    .menu-cta,
+    .menu-toc__link {
+      transition: background-color .15s, color .15s, box-shadow .15s;
+    }
+    /* Масштаб с кнопок и двойным нажатием меняется плавно; за пальцем картинка идёт без задержки */
+    .menu-zoom__img.is-animating {
+      transition: transform .28s cubic-bezier(.2, .7, .2, 1);
+    }
+    .menu-zoom[open] {
+      animation: menu-zoom-in .2s ease-out;
+    }
+  }
+  @keyframes menu-zoom-in {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+/* ---------- Меню для чтения: разделы, страницы, кадры разделов, лупа, панель брони ----------
+   ПК (от 1024px): слева разделы, справа страницы целиком.
+   Планшет (768–1023px): сверху полоса разделов, страницы целиком.
+   Телефон (до 767px): сверху полоса разделов, вместо листа — кадры его разделов, внизу кнопка брони.
+   Отступ сверху у якорей — шапка сайта (70px) и полоса разделов (--nav), чтобы раздел не уходил под них */
+
+@layer gz-layout {
+  .section_menu-pages {
+    --nav: 0px;
+  }
+  .menu-read {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    align-items: start;
+    gap: 32px;
+    max-inline-size: 1440px;
+    margin-inline: auto;
+    padding: 24px 20px 48px;
+  }
+  .menu-nav {
+    position: sticky;
+    inset-block-start: 86px;
+    max-block-size: calc(100vh - 102px);
+    max-block-size: calc(100svh - 102px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  .menu-nav__pages {
+    display: grid;
+    gap: 14px;
+  }
+  .menu-nav__secs {
+    display: grid;
+    margin-block-start: 2px;
+  }
+  .menu-nav__link {
+    display: flex;
+    gap: 8px;
+    padding: 5px 10px 5px 12px;
+  }
+  .menu-nav__secs .menu-nav__link {
+    padding-inline-start: 34px;
+  }
+
+  .menu-read__pages {
+    display: grid;
+    justify-items: center;
+    gap: 32px;
+    min-inline-size: 0;
+  }
+  .menu-page {
+    position: relative;
+    inline-size: 100%;
+    max-inline-size: 1000px;
+    scroll-margin-top: calc(86px + var(--nav));
+  }
+  .menu-page__zoom {
+    display: block;
+  }
+  .menu-page__zoom img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    aspect-ratio: 1600 / 2263;
+  }
+  /* ПК и планшет: разделы — невидимые рамки поверх листа. По ним работают якоря (#supy) и подсветка;
+     нажатия проходят сквозь них к листу. Кадры, заголовки разделов и «Страница целиком» — только для телефона */
+  .menu-page__title {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .menu-page__secs {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .menu-sec {
+    position: absolute;
+    inset-inline-start: calc(var(--x) * 100%);
+    inset-block-start: calc(var(--y) * 100%);
+    inline-size: calc(var(--w) * 100%);
+    block-size: calc(var(--h) * 100%);
+    scroll-margin-top: calc(86px + var(--nav));
+  }
+  .menu-sec__title,
+  .menu-sec__crop,
+  .menu-page__whole {
+    display: none;
+  }
+
+  /* Лупа на ПК (menu.js): кусок той же страницы крупнее, под курсором */
+  .menu-lens {
+    position: absolute;
+    z-index: 3;
+    inline-size: 280px;
+    block-size: 180px;
+    pointer-events: none;
+    background-repeat: no-repeat;
+  }
+
+  .menu-dock {
+    display: none;
+  }
+
+  /* Планшет и телефон: разделы — полоса кнопок под шапкой сайта, прилипает при прокрутке */
+  @media (max-width: 1023px) {
+    .section_menu-pages {
+      --nav: 56px;
+    }
+    .menu-read {
+      display: block;
+      padding: 0 0 40px;
+    }
+    .menu-nav {
+      position: sticky;
+      inset-block-start: 70px;
+      z-index: 5;
+      max-block-size: none;
+      overflow: visible;
+    }
+    .menu-nav__pages {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      padding: 8px 12px;
+      scrollbar-width: none;
+    }
+    .menu-nav__pages::-webkit-scrollbar {
+      display: none;
+    }
+    .menu-nav__page,
+    .menu-nav__secs {
+      display: contents;
+    }
+    .menu-nav__page.has-secs > .menu-nav__link--page,
+    .menu-nav__num {
+      display: none;
+    }
+    .menu-nav__link,
+    .menu-nav__secs .menu-nav__link {
+      flex: none;
+      align-items: center;
+      min-block-size: 40px;
+      padding: 0 14px;
+      white-space: nowrap;
+    }
+    .menu-read__pages {
+      padding: 20px 12px 0;
+      gap: 24px;
+    }
+    .menu-page,
+    .menu-sec {
+      scroll-margin-top: calc(70px + var(--nav) + 12px);
+    }
+  }
+
+  /* Телефон: вместо листа — его разделы крупными кадрами, один под другим */
+  @media (max-width: 767px) {
+    .menu-read {
+      padding-block-end: calc(84px + env(safe-area-inset-bottom));
+    }
+    .menu-read__pages {
+      display: block;
+    }
+    .menu-page + .menu-page {
+      margin-block-start: 28px;
+    }
+    .menu-page__title {
+      position: static;
+      inline-size: auto;
+      block-size: auto;
+      overflow: visible;
+      clip-path: none;
+      white-space: normal;
+      margin-block-end: 12px;
+    }
+    .menu-page.has-secs .menu-page__zoom {
+      display: none;
+    }
+    .menu-page__secs {
+      position: static;
+      display: grid;
+      gap: 24px;
+      overflow: visible;
+      pointer-events: auto;
+    }
+    .menu-sec {
+      position: static;
+      display: grid;
+      gap: 10px;
+      inline-size: auto;
+      block-size: auto;
+    }
+    .menu-sec__title {
+      display: block;
+    }
+    /* Кадр: окно с пропорциями раздела, в нём лист, сдвинутый так, что в окне ровно раздел */
+    .menu-sec__crop {
+      position: relative;
+      display: block;
+      overflow: hidden;
+    }
+    .menu-sec__crop img {
+      position: absolute;
+      inset-inline-start: calc(-100% * var(--x) / var(--w));
+      inset-block-start: calc(-100% * var(--y) / var(--h));
+      inline-size: calc(100% / var(--w));
+      max-inline-size: none;
+      block-size: auto;
+      aspect-ratio: 1600 / 2263;
+    }
+    .menu-page__whole {
+      display: inline-flex;
+      align-items: center;
+      justify-self: start;
+      min-block-size: 44px;
+    }
+
+    /* Кнопка брони внизу экрана; в шапке вместо неё остаётся только PDF */
+    .menu-dock {
+      position: fixed;
+      inset-inline: 0;
+      inset-block-end: 0;
+      z-index: 20;
+      display: block;
+      padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    }
+    .menu-dock__call {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-block-size: 52px;
+      padding: 6px 14px;
+    }
+  }
+
+  /* Полоса над меню: в виде для чтения вместо содержания с миниатюрами — подсказка про лупу
+     (её разделы заменяют), на телефоне полосы нет совсем: переключателя там нет */
+  .menu-view:not([data-mode="book"]) .menu-toc,
+  .menu-view:not([data-mode="flat"]) .menu-view__hint {
+    display: none;
+  }
+  @media (hover: none), (max-width: 1023px) {
+    .menu-view__hint {
+      display: none;
+    }
+  }
+  @media (max-width: 767px) {
+    .menu-view:not([data-mode="book"]) .menu-view__bar {
+      display: none;
+    }
+  }
+}
+
+@layer gz-components {
+  .menu-view__hint {
+    color: rgb(255 255 255 / .6);
+    font: 13px/1.4 var(--gz-type);
+    letter-spacing: 0;
+  }
+
+  .menu-nav__link {
+    color: rgb(255 255 255 / .72);
+    font: 13px/1.3 var(--gz-type);
+    letter-spacing: 0;
+    text-decoration: none;
+  }
+  .menu-nav__link--page {
+    color: var(--gz-paper);
+    font: 15px/1.25 var(--gz-slab);
+    letter-spacing: .02em;
+  }
+  .menu-nav__num {
+    flex: none;
+    min-inline-size: 14px;
+    color: rgb(255 255 255 / .45);
+    font: 12px/1.6 var(--gz-type);
+  }
+  @media (hover: hover) {
+    .menu-nav__link:hover {
+      background: rgb(255 255 255 / .08);
+      color: var(--gz-paper);
+    }
+  }
+  /* Раздел, который сейчас на экране (menu.js): на ПК — полоса слева, на телефоне — «бумажная» кнопка */
+  .menu-nav__link[aria-current] {
+    box-shadow: inset 2px 0 0 var(--gz-paper);
+    background: rgb(255 255 255 / .1);
+    color: var(--gz-paper);
+  }
+  @media (max-width: 1023px) {
+    .menu-nav {
+      border-block-end: 1px solid rgb(255 255 255 / .16);
+      background: var(--gz-table);
+    }
+    .menu-nav__link,
+    .menu-nav__link--page {
+      box-shadow: inset 0 0 0 1px rgb(255 255 255 / .4);
+      font: 14px/1 var(--gz-type);
+    }
+    .menu-nav__link[aria-current] {
+      box-shadow: inset 0 0 0 1px var(--gz-paper);
+      background: var(--gz-paper);
+      color: var(--gz-ink);
+    }
+  }
+
+  /* Лист лежит на столе бумагой */
+  .menu-page__zoom,
+  .menu-sec__crop {
+    background: var(--gz-paper);
+    box-shadow: 0 14px 40px rgb(0 0 0 / .55);
+    cursor: zoom-in;
+  }
+  /* Раздел, к которому перешли: рамка краской меню, остальной лист притушен */
+  .menu-sec.is-lit {
+    outline: 3px solid var(--gz-spot);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 100vmax rgb(28 10 2 / .28);
+  }
+  .menu-page__title {
+    color: rgb(255 255 255 / .6);
+    font: 12px/1.3 var(--gz-slab);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  .menu-page__num::after {
+    content: " ·";
+  }
+  .menu-sec__title {
+    color: var(--gz-paper);
+    font: normal 30px/1 var(--gz-display);
+    letter-spacing: .02em;
+  }
+  .menu-page__whole {
+    color: rgb(255 255 255 / .8);
+    font: 13px/1.3 var(--gz-type);
+    letter-spacing: 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  @media (max-width: 767px) {
+    .menu-sec.is-lit {
+      outline: 0;
+      box-shadow: none;
+    }
+    .menu-sec.is-lit .menu-sec__crop {
+      outline: 3px solid var(--gz-spot);
+      outline-offset: 3px;
+    }
+  }
+
+  .menu-lens {
+    border: 2px solid var(--gz-paper);
+    background-color: var(--gz-paper);
+    box-shadow: 0 0 0 1px var(--gz-ink), 0 18px 40px rgb(0 0 0 / .55);
+  }
+
+  .menu-dock {
+    border-block-start: 1px solid rgb(255 255 255 / .16);
+    background: var(--gz-table);
+  }
+  .menu-dock__call {
+    background: var(--gz-paper);
+    box-shadow: inset 0 0 0 3px var(--gz-paper), inset 0 0 0 4px var(--gz-ink);
+    color: var(--gz-ink);
+    font: 18px/1.1 var(--gz-slab);
+    letter-spacing: .02em;
+    text-decoration: none;
+  }
+  .menu-dock__icon {
+    display: grid;
+    font-size: 21px;
+  }
+  .menu-dock__note {
+    display: block;
+    font: 12px/1.3 var(--gz-type);
+    letter-spacing: 0;
+    opacity: .7;
+  }
+}
+
+@layer gz-motion {
+  @media (prefers-reduced-motion: no-preference) {
+    .menu-nav__link {
+      transition: background-color .15s, color .15s;
+    }
+    .menu-sec {
+      transition: box-shadow .4s, outline-color .4s;
+    }
+    .menu-dock {
+      transition: transform .25s ease-out;
+    }
+  }
+}
+
+/* Подвал виден — кнопка брони уезжает: в подвале те же контакты (класс ставит menu.js) */
+.menu-dock.is-away {
+  transform: translateY(110%);
+}
+/* Кнопка «Наверх» сайта (site.css, без слоёв) на телефоне встаёт над кнопкой брони */
+@media (max-width: 767px) {
+  #back-to-top {
+    right: 12px;
+    bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+}
